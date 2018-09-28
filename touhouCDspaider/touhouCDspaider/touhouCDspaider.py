@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import bs4
 import re
+import time
  
 def Gethtmltext(url, code="utf-8"):
     try:
@@ -24,19 +25,29 @@ def Generatealbumlist(albumlist,startalbum = '"Activity" Case：01 -Graveyard Me
         if title.string == '上一页' or title.string == '下一页':
             continue
         else:
-            #with open(filename,'a') as f:
-                #f.write(title.string)
             albumlist.append(title.string)
 
 def Exportalbuminfo(albumlist,startalbum = '"Activity" Case：01 -Graveyard Memory-'):
-    Generatealbumlist(albumlist,startalbum = '"Activity" Case：01 -Graveyard Memory-')
+    Generatealbumlist(albumlist,startalbum)
+    count = 0
+    scale = 50
+    start = time.perf_counter()
+    print("执行开始".center(scale//2, "-"))
     while len(albumlist) > 1:
-        for i in range(len(albumlist)):
-            if i != 0 or startalbum == '"Activity" Case：01 -Graveyard Memory-':
-                Getalbuminfo(albumlist[i])
+        print(albumlist)
+        a = '*' * int(count)
+        b = '.' * (scale - int(count))
+        c = (int(count)/scale)*100
+        dur = time.perf_counter() - start
+        print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+        count += 0.1
         startalbum = albumlist[-1]
         albumlist = []
+      #  for i in range(len(albumlist)):
+       #     if i != 0 or startalbum == '"Activity" Case：01 -Graveyard Memory-':
+        #        Getalbuminfo(albumlist[i])
         Generatealbumlist(albumlist,startalbum)
+    print("\n"+"执行结束".center(scale//2,'-'))
 
 def Getalbuminfo(albumname):
     albumurl = 'https://thwiki.cc/'
@@ -45,11 +56,10 @@ def Getalbuminfo(albumname):
     text = []
     musicinfo = []
     musicinfo.append(albumname)
+    f = open('localdata.txt','w')
     for tag in soup.find_all('table'):
         if tag.get('class') == ['wikitable', 'musicTable']:
             for item in tag.find_all('tr'):
-                global count
-                count = 0
                 try:
                     a = item.b.string
                     if a in '0102030405060708091121314151617181922324252627282933435363738394454647484955657585966768697787988990':
@@ -77,30 +87,22 @@ def Getalbuminfo(albumname):
                                     else:
                                         musicinfo.append(ogmusic.string)
                     if musicinfo[-1] != albumname and musicinfo[-2] != albumname:
-                        print(musicinfo)
-                        count += 1
+                        '''
+                        position = 0
+                        for position in range(len(musicinfo)):
+                            f.write(musicinfo[position])
+                            if position == len(musicinfo) - 1:
+                                print('\n')
+                            else:
+                                print(',')
+                        f.close()
+                        '''
                         musicinfo = []
                         musicinfo.append(albumname)
 
-url = 'https://thwiki.cc/index.php?title=%E5%88%86%E7%B1%BB:%E5%90%8C%E4%BA%BA%E4%B8%93%E8%BE%91&pagefrom='
+url = 'https://thwiki.cc/index.php?title=分类:同人专辑&pagefrom='
 albumlist = []
-filename = 'C://localdata.txt'
 Exportalbuminfo(albumlist)
-print(count)
-'''
-for title in Getalbumhtml(url,'"Activity" Case：01 -Graveyard Memory-').find_all('a'):
-    if title.string == '上一页' or title.string == '下一页':
-        continue
-    else:
-        albumlist.append(title.string)
-'''
-#print(albumlist)
-#for albumname in albumlist:
-    #print(Gethtmltext(albumurl+albumname))
-#albumname = '"Activity" Case：01 -Graveyard Memory-'
-#albumname = '東方幻奏響REVIVAL'
-
-    
 
 '''
 version2：
