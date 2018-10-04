@@ -4,16 +4,18 @@ import bs4
 import re
 import time
  
-def Gethtmltext(url, code="utf-8"):
+def Gethtmltext(url, code="utf-8"): 
+    #a simple modul to get html text
     try:
-        r = requests.get(url)
+        r = requests.get(url,headers = {'user-agent':'Mozilla/5.0'})
         r.raise_for_status()
         r.encoding = code
         return r.text
     except:
         return ''
 
-def Getalbumhtml(url,startalbum = '"Activity" Case：01 -Graveyard Memory-'):
+def Getalbumhtml(url,startalbum = '"Activity" Case：01 -Graveyard Memory-'): 
+    #to get the html text in album pages
     html = Gethtmltext(url+startalbum)
     soup = BeautifulSoup(html, 'html.parser')
     for tag in soup.find_all('div'):
@@ -21,6 +23,7 @@ def Getalbumhtml(url,startalbum = '"Activity" Case：01 -Graveyard Memory-'):
             return(tag)
 
 def Generatealbumlist(albumlist,startalbum = '"Activity" Case：01 -Graveyard Memory-'):
+    #to get album names in album pages
     for title in Getalbumhtml(url,startalbum).find_all('a'):
         if title.string == '上一页' or title.string == '下一页':
             continue
@@ -28,35 +31,53 @@ def Generatealbumlist(albumlist,startalbum = '"Activity" Case：01 -Graveyard Me
             albumlist.append(title.string)
 
 def Exportalbuminfo(albumlist,startalbum = '"Activity" Case：01 -Graveyard Memory-'):
+    #actually the main function
+    mode = eval(input('模式1 为 获取专辑列表 模式2 为 获取单曲列表\n'))
     Generatealbumlist(albumlist,startalbum)
+    f = open('C:/localdata.txt','w',encoding='utf-8')
+    number = 0
+    #an additional modul to make a prograss bar
     count = 0
     scale = 50
     start = time.perf_counter()
     print("执行开始".center(scale//2, "-"))
+    #try to traverse all album pages
     while len(albumlist) > 1:
-        print(albumlist)
-        a = '*' * int(count)
-        b = '.' * (scale - int(count))
-        c = (int(count)/scale)*100
+        a = '*' * int(count/1.1)
+        b = '.' * (scale - int(count/1.1))
+        c = (int(count/1.1)/scale)*100
         dur = time.perf_counter() - start
         print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
-        count += 0.1
+        count += 1
+        #try to get all vocal/music in each album
+        for i in range(len(albumlist)):
+            if i != 0 or startalbum == '"Activity" Case：01 -Graveyard Memory-':
+                if mode == 1:
+                    f.write(albumlist[i])
+                    f.write('\n')
+                else:
+                    Getalbuminfo(albumlist[i],f)
         startalbum = albumlist[-1]
         albumlist = []
-      #  for i in range(len(albumlist)):
-       #     if i != 0 or startalbum == '"Activity" Case：01 -Graveyard Memory-':
-        #        Getalbuminfo(albumlist[i])
         Generatealbumlist(albumlist,startalbum)
+    f.close()
+    #the additional modul of prograss bar to make sure it stop at 100%
+    a = '*' * 50
+    b = '.' * (scale - 50)
+    c = (50/scale)*100
+    dur = time.perf_counter() - start
+    print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
     print("\n"+"执行结束".center(scale//2,'-'))
 
-def Getalbuminfo(albumname):
+def Getalbuminfo(albumname,filename):
+    #actually the most usful function
+    #it contain the function to get all vocal/music and the function to make a output
     albumurl = 'https://thwiki.cc/'
     html = Gethtmltext(albumurl+albumname)
     soup = BeautifulSoup(html, 'html.parser')
     text = []
     musicinfo = []
     musicinfo.append(albumname)
-    f = open('localdata.txt','w')
     for tag in soup.find_all('table'):
         if tag.get('class') == ['wikitable', 'musicTable']:
             for item in tag.find_all('tr'):
@@ -86,23 +107,28 @@ def Getalbuminfo(albumname):
                                         musicinfo.append(ogmusic.string)
                                     else:
                                         musicinfo.append(ogmusic.string)
-                    if musicinfo[-1] != albumname and musicinfo[-2] != albumname:
-                        '''
-                        position = 0
-                        for position in range(len(musicinfo)):
-                            f.write(musicinfo[position])
-                            if position == len(musicinfo) - 1:
-                                print('\n')
-                            else:
-                                print(',')
-                        f.close()
-                        '''
-                        musicinfo = []
-                        musicinfo.append(albumname)
+                        else:
+                            continue
+                        if musicinfo[-1] != albumname and musicinfo[-2] != albumname:
+                            for position in range(len(musicinfo)):
+                                filename.write(musicinfo[position])
+                                if position == len(musicinfo) - 1:
+                                    filename.write('\n')
+                                else:
+                                    filename.write(',')
+                            musicinfo = []
+                            musicinfo.append(albumname)
+                        else:
+                            continue
 
 url = 'https://thwiki.cc/index.php?title=分类:同人专辑&pagefrom='
 albumlist = []
-Exportalbuminfo(albumlist)
+choice = input('是否定义起始专辑\n')
+if choice == 'yes':
+    startalbum = input('输入起始专辑\n')
+    Exportalbuminfo(albumlist,startalbum)
+else:
+    Exportalbuminfo(albumlist)
 
 '''
 version2：
