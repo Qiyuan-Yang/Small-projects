@@ -155,6 +155,10 @@ def getAlbumInfo(file,album,lang):
             elif lang == 'English':
                 print('the singles it contains：{} \nthe ogmusic it contains：{}'.format(info[1],info[1:-1]))
 
+def checkUpdate(file):
+
+def getUpdate():
+
 def main():
 
 url = 'https://thwiki.cc/index.php?title=分类:同人专辑&pagefrom='
