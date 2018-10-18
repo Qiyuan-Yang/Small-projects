@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import bs4
 import re
 import time
+from multiprocessing import Pool
  
 def getHtmlText(url, code="utf-8"): 
     #a simple modul to get html text
@@ -24,23 +25,24 @@ def getAlbumHtml(url,startAlbum = '"Activity" Case：01 -Graveyard Memory-'):
 
 def generateAlbumList(albumList,startAlbum = '"Activity" Case：01 -Graveyard Memory-'):
     #to get album names in album pages
-    for title in getAlbumHtml(url,startAlbum).find_all('a'):
+    for title in getAlbumHtml('https://thwiki.cc/index.php?title=分类:同人专辑&pagefrom=',startAlbum).find_all('a'):
         if title.string == '上一页' or title.string == '下一页':
             continue
         else:
             albumList.append(title.string)
 
-def exportAlbumInfo(albumList,startAlbum = '"Activity" Case：01 -Graveyard Memory-'):
+def exportAlbumInfo(albumList = [],startAlbum = '"Activity" Case：01 -Graveyard Memory-',mode = 0):
     #actually the main function
-    mode = eval(input('模式1 为 获取专辑列表 模式2 为 获取单曲列表\n'))
     generateAlbumList(albumList,startAlbum)
-    f = open('C:/localdata.txt','w',encoding='utf-8')
-    number = 0
+    if mode == 2:
+        f = open('C:/musicLocalData.txt','w',encoding='utf-8')
+    else:
+        f = open('C:/albumLocalData.txt','w',encoding='utf-8')
     #an additional modul to make a prograss bar
     count = 0
     scale = 50
     start = time.perf_counter()
-    print("执行开始".center(scale//2, "-"))
+    print("执行开始 start processing".center(scale//2, "-"))
     #try to traverse all album pages
     while len(albumList) > 1:
         a = '*' * int(count/1.1)
@@ -67,7 +69,7 @@ def exportAlbumInfo(albumList,startAlbum = '"Activity" Case：01 -Graveyard Memo
     c = (50/scale)*100
     dur = time.perf_counter() - start
     print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
-    print("\n"+"执行结束".center(scale//2,'-'))
+    print("\n"+"执行结束 end processing".center(scale//2,'-'))
 
 def getAlbumInfo(albumName,fileName):
     #actually the most usful function
@@ -135,7 +137,7 @@ def ogmusicMatch(file,ogmusic,lang = '中文'):
                 print('The No.{}'.format(count),end = ':')
                 print('\nalbum name:{} \nsingle name:{}'.format(info[0],info[1]))
 
-def getSingleInfo(file,single,lang = '中文'):
+def searchSingleInfo(file,single,lang = '中文'):
     f = open(file,encoding = 'UTF-8')
     for line in f.readlines():
         info = line.split(',')
@@ -145,7 +147,7 @@ def getSingleInfo(file,single,lang = '中文'):
             elif lang == 'English':
                 print('the album it belongs to：{} \nthe ogmusic it contains：{}'.format(info[0],info[1:-1]))
 
-def getAlbumInfo(file,album,lang):
+def searchAlbumInfo(file,album,lang):
     f = open(file,encoding = 'UTF-8')
     for line in f.readlines():
         info = line.split(',')
@@ -155,18 +157,106 @@ def getAlbumInfo(file,album,lang):
             elif lang == 'English':
                 print('the singles it contains：{} \nthe ogmusic it contains：{}'.format(info[1],info[1:-1]))
 
-def checkUpdate(file):
+def checkUpdate(file,*lang):
+    f = open(file,encoding = 'UTF-8')
+    txt = f.read()
+    txt = txt.split('\n')
+    output = open('C:/updateList.txt','w',encoding = 'UTF-8')
+    startAlbum = '"Activity" Case：01 -Graveyard Memory-'
+    count = 0
+    scale = 50
+    start = time.perf_counter()
+    print("执行开始 start processing".center(scale//2, "-"))
+    albumList = []
+    updateList = []
+    #start = time.perf_counter()
+    generateAlbumList(albumList)
+    while len(albumList) > 1:
+        for i in range(len(albumList)):
+            if i != 0 or startAlbum == '"Activity" Case：01 -Graveyard Memory-':
+                if albumList[i] in txt[count:len(txt)]:
+                    count += 1
+                    bar = int(scale*count/len(txt))
+                    a = '*' * bar
+                    b = '.' * (scale - bar)
+                    c = (count/len(txt))*100
+                    dur = time.perf_counter() - start
+                    print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+                else:
+                    output.write(albumList[i])
+                    output.write('\n')
+                    updateList.append(albumList[i])
+        startAlbum = albumList[-1]
+        albumList = []
+        generateAlbumList(albumList,startAlbum)
+    #the additional modul of prograss bar to make sure it stop at 100%
+    a = '*' * 50
+    b = '.' * 0
+    c = 100
+    dur = time.perf_counter() - start
+    print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+    print("\n"+"执行结束 end processing".center(scale//2,'-'))
+    if updateList == []:
+        if lang == '汉语':
+            print('无需更新')
+        else:
+            print('No update')
+    else:
+        if lang == '汉语':
+            print('检查到更新')
+        else:
+            print('Need update')
+    f.close()
+    output.close()
+    
 
-def getUpdate():
+def getUpdate(file):
+    input = open(file,encoding = 'UTF-8')
+    txt = input.read()
+    txt = txt.split('\n')
+    count = 0
+    scale = 50
+    start = time.perf_counter()
+    print("执行开始 start processing".center(scale//2, "-"))
+    f = open('C:/musicLocalData.txt','a',encoding='utf-8')
+    for album in txt:
+        getAlbumInfo(album,f)
+        count += 1
+        bar = int(scale*count/len(txt))
+        a = '*' * bar
+        b = '.' * (scale - bar)
+        c = (count/len(txt))*100
+        dur = time.perf_counter() - start
+        print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
+    f.close()
+    input.close()
+    print('\n')
 
 def main():
+    lang = input('汉语请输入1 for English please key in 2\n')
+    ending = 'not'
+    if lang == '1':
+        while ending == 'not':
+            module = input('获取专辑列表请输入1 获取单曲信息请输入2 检查更新请输入3 获取更新请输入4 获取单曲信息请输入5 匹配原曲请输入6 退出请输入0\n')
+            if module == '1':
+                exportAlbumInfo(mode = 1)
+            elif module == '2':
+                exportAlbumInfo(mode = 2)
+            elif module == '3':
+                checkUpdate('C:/albumLocalData.txt','汉语')
+            elif module == '4':
+                getUpdate('C:/updateList.txt')
+            elif module == '5':
+                single = input('请输入单曲名\n')
+                searchSingleInfo('C:/musicLocalData.txt',single)
+            elif module == '6':
+                ogmusic = input('请输入原曲名\n')
+                ogmusicMatch('C:/musicLocalData.txt',ogmusic)
+            elif module == 'advance':
+                continue#need more work
+            else:
+                break
+            ending = input('结束？\n')
 
-url = 'https://thwiki.cc/index.php?title=分类:同人专辑&pagefrom='
-albumlist = []
-choice = input('是否定义起始专辑\n')
-if choice == 'yes':
-    startalbum = input('输入起始专辑\n')
-    exportAlbumInfo(albumlist,startalbum)
-else:
-    exportAlbumInfo(albumlist)
-
+if __name__ == '__main__':
+    main()
