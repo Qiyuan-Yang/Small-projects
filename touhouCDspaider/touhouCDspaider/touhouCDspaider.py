@@ -230,33 +230,70 @@ def getUpdate(file):
         print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
     f.close()
     input.close()
+    print('更新专辑信息 updating album data')
+    exportAlbumInfo(mode = 1)
     print('\n')
 
 def main():
     lang = input('汉语请输入1 for English please key in 2\n')
-    ending = 'not'
     if lang == '1':
-        while ending == 'not':
-            module = input('获取专辑列表请输入1 获取单曲信息请输入2 检查更新请输入3 获取更新请输入4 获取单曲信息请输入5 匹配原曲请输入6 退出请输入0\n')
+        ending = '否'
+        while ending in '不否':
+            module = input('检查更新请输入1 获取更新请输入2 获取单曲信息请输入3 匹配原曲请输入4 退出请输入0\n')
+            #if module == '1':
+            #    exportAlbumInfo(mode = 1)
+            #elif module == '2':
+            #    exportAlbumInfo(mode = 2)
             if module == '1':
-                exportAlbumInfo(mode = 1)
-            elif module == '2':
-                exportAlbumInfo(mode = 2)
-            elif module == '3':
                 checkUpdate('C:/albumLocalData.txt','汉语')
-            elif module == '4':
+            elif module == '2':
                 getUpdate('C:/updateList.txt')
-            elif module == '5':
+            elif module == '3':
                 single = input('请输入单曲名\n')
                 searchSingleInfo('C:/musicLocalData.txt',single)
-            elif module == '6':
+            elif module == '4':
                 ogmusic = input('请输入原曲名\n')
                 ogmusicMatch('C:/musicLocalData.txt',ogmusic)
             elif module == 'advance':
-                continue#need more work
+                module = input('获取专辑列表请输入1 获取单曲信息请输入2\n')
+                if module == '1':
+                    exportAlbumInfo(mode = 1)
+                elif module == '2':
+                    exportAlbumInfo(mode = 2)
             else:
                 break
             ending = input('结束？\n')
+            if ending == '':
+                break
+    if lang == '2':
+        ending = 'no'
+        while ending in 'not':
+            module = input("key in '1' for checking update\nkey in '2' for getting update\nkey in '3' for getting single's info\nkey in '4' for matching ogmusic\nkey in '0' for exit\n")
+            #if module == '1':
+            #    exportAlbumInfo(mode = 1)
+            #elif module == '2':
+            #    exportAlbumInfo(mode = 2)
+            if module == '1':
+                checkUpdate('C:/albumLocalData.txt','English')
+            elif module == '2':
+                getUpdate('C:/updateList.txt')
+            elif module == '3':
+                single = input("please key in single's name\n")
+                searchSingleInfo('C:/musicLocalData.txt',single)
+            elif module == '4':
+                ogmusic = input('pleaes key in ogmusic name\n')
+                ogmusicMatch('C:/musicLocalData.txt',ogmusic)
+            elif module == 'advance':
+                module = input('获取专辑列表请输入1 获取单曲信息请输入2\n')
+                if module == '1':
+                    exportAlbumInfo(mode = 1)
+                elif module == '2':
+                    exportAlbumInfo(mode = 2)
+            else:
+                break
+            ending = input('exit?\n')
+            if ending == '':
+                break
 
 if __name__ == '__main__':
     main()
