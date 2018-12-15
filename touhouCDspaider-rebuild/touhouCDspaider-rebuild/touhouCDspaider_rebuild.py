@@ -88,9 +88,26 @@ def getAlbumInfo(albumName):
     soup = BeautifulSoup(html, 'html.parser')
     singleInfo = {}
     singleInfo['专辑名'] = albumName
+    publisher = []
     for tag in soup.find_all('table'):
+        if tag.get('class') == ['wikitable','doujininfo']:
+            for tr in tag.find_all('tr'):
+                try:
+                    for td in tr.find_all('td'):
+                        try:
+                            for a in td.find_all('a'):
+                                if a.get('title') == a.string or a.get('title') == a.string+'（页面不存在）':
+                                    publisher.append(a.string)
+                        except:
+                            continue
+                except:
+                    continue
         if tag.get('class') == ['wikitable', 'musicTable']:
             for item in tag.find_all('tr'):
+                if len(publisher) == 1:
+                    singleInfo['制作方'] = publisher[0]
+                elif publisher != []:
+                    singleInfo['制作方'] = publisher[(len(publisher)-1)//2]
                 try:
                     #get the title of each single
                     a = item.b.string
@@ -101,9 +118,13 @@ def getAlbumInfo(albumName):
                                 singleName = re.search(pattern,str(j))
                                 if singleName:
                                     singleName = singleName.group(0)[1:-5]
+                                    if '\u3000' in singleName:
+                                        singleName = singleName.replace('\u3000',' ')
                                     singleInfo['单曲名'] = singleName
                         else:
                             singleName = item.a.string
+                            if '\u3000' in singleName:
+                                singleName = singleName.replace('\u3000',' ')
                             singleInfo['单曲名'] = singleName
                 except AttributeError:
                     for td in item.find_all('td'):
@@ -113,11 +134,13 @@ def getAlbumInfo(albumName):
                             getSingleDetails(singleInfo,item,'演唱')
                         elif td.string == '作词':
                             getSingleDetails(singleInfo,item,'作词')
+                        elif td.string == '社团':
+                            getSingleDetails(singleInfo,item,'社团')
                         elif td.string == '原曲':
                             getSingleDetails(singleInfo,item,'原曲')
+                            infoFile.write(str(singleInfo)+'\n')
+                            #print(publisher)
                             #print(singleInfo)
-                            infoFile.write(str(singleInfo))
-                            infoFile.write('\n')
                             singleInfo = {}
                             singleInfo['专辑名'] = albumName
                         else:
@@ -154,7 +177,29 @@ def labelMatch(file,label,content,lang = '中文',save = False):
                 elif lang == 'English':
                     print('The No.{} result'.format(count),end = ':')
                     print('\n{}'.format(info))
-                if save:
+                if save == '虾米':
+                    f = open('C:/result.txt','a',encoding = 'utf-8')
+                    single = info['单曲名']
+                    publisher = info['制作方']
+                    f.write(str(single)+' '+str(publisher)+'\n')
+                    if '演唱' in info: 
+                        singers = info['演唱']
+                        for singer in singers:
+                            f.write(str(single)+' '+str(singer)+'\n')
+                    lyrics = info['编曲']
+                    for lyric in lyrics:
+                        f.write(str(single)+' '+str(lytic)+'\n')
+                    if '社团' in info:
+                        group = info['社团']
+                        f.write(str(single)+' '+str(group)+'\n')
+                    f.close()
+                elif save == '网易云':
+                    f = open('C:/result.txt','a',encoding = 'utf-8')
+                    single = info['单曲名']
+                    ogmusic = info['专辑名']
+                    f.write(str(single)+' '+str(ogmusic)+'\n')
+                    f.close()
+                elif save:
                     f = open('C:/result.txt','a',encoding = 'utf-8')
                     f.write(str(info)+'\n')
                     f.close()
@@ -162,52 +207,6 @@ def labelMatch(file,label,content,lang = '中文',save = False):
             continue
 
 
-def ogmusicMatch(file,ogmusic,lang = '中文'):
-    labelMatch(file,'原曲',ogmusic,lang)
-    '''count = 0
-    f = open(file,encoding = 'UTF-8')
-    for line in f.readlines():
-        info = eval(line)
-        if ogmusic in info:
-            count += 1
-            if lang == '中文':
-                print('第{}首'.format(count),end = ':')
-                print('\n专辑名：{} \n单曲名：{}'.format(info[0],info[1]))
-            elif lang == 'English':
-                print('The No.{}'.format(count),end = ':')
-                print('\nalbum name:{} \nsingle name:{}'.format(info[0],info[1]))'''
-
-
-def searchSingleInfo(file,single,lang = '中文'):
-    labelMatch(file,'单曲名',single,lang)
-    '''f = open(file,encoding = 'UTF-8')
-    for line in f.readlines():
-        info = line.split(',')
-        if single in info[1]:
-            if lang == '中文':
-                print('所属专辑：{} \n包含原曲及原曲来源：{}'.format(info[0],info[1:-1]))
-            elif lang == 'English':
-                print('the album it belongs to：{} \nthe ogmusic it contains：{}'.format(info[0],info[1:-1]))'''
-
-def searchAlbumInfo(file,album,lang):
-    labelMatch(file,'专辑名',album,lang)
-    '''f = open(file,encoding = 'UTF-8')
-    for line in f.readlines():
-        info = line.split(',')
-        if single in info[0]:
-            if lang == '中文':
-                print('包含单曲：{} \n原曲及原曲来源：{}'.format(info[1],info[1:-1]))
-            elif lang == 'English':
-                print('the singles it contains：{} \nthe ogmusic it contains：{}'.format(info[1],info[1:-1]))'''
-
-def searchSingerInfo(file,singer,lang = '中文'):
-    labelMatch(file,'演唱',singer,lang)
-
-def searchArrangerInfo(file,arranger,lang = '中文'):
-    labelMatch(file,'编曲',arranger,lang)
-
-def searchLyricsInfo(file,lyrics,lang = '中文'):
-    labelMatch(file,'作词',lyrics,lang)
 
 def checkUpdate(file,*lang):
     f = open(file,encoding = 'UTF-8')
@@ -301,8 +300,8 @@ def main():
             elif module == '2':
                 getUpdate('C:/updateList.txt')
             elif module == '3':
-                label = input('请输入需要查询的项目（原曲/单曲名/专辑名/演唱/编曲/作词）\n')
-                if label not in '原曲/单曲名/专辑名/演唱/编曲/作词':
+                label = input('请输入需要查询的项目（原曲/单曲名/专辑名/演唱/编曲/作词/制作方/社团）\n')
+                if label not in '原曲/单曲名/专辑名/演唱/编曲/作词/制作方/社团':
                     print('输入错误\n')
                     break
                 content = input('请输入需要查询的内容\n')
@@ -352,37 +351,7 @@ def main():
 
 if __name__ == '__main__':
     sys.setrecursionlimit(1000000)
+    #exportAlbumInfo('Fragile Sacrifice',2)
     main()
-    '''
-    startAlbum = '"Activity" Case：01 -Graveyard Memory-'
-    albumList = []
-    generateAlbumList(albumList,startAlbum)
-    #an additional modul to make a prograss bar
-    count = 0
-    scale = 50
-    start = time.perf_counter()
-    print("执行开始 start processing".center(scale//2, "-"))
-    #try to traverse all album pages
-    while len(albumList) > 1:
-        a = '*' * int(count/1.1)
-        b = '.' * (scale - int(count/1.1))
-        c = (int(count/1.1)/scale)*100
-        dur = time.perf_counter() - start
-        print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
-        count += 1
-        #try to get all vocal/music in each album
-        if startAlbum != '"Activity" Case：01 -Graveyard Memory-':
-            del albumList[0]
-        with Pool() as pool:
-            pool.map(getAlbumInfo,albumList)
-        startAlbum = albumList[-1]
-        albumList = []
-        generateAlbumList(albumList,startAlbum)
-    #the additional modul of prograss bar to make sure it stop at 100%
-    a = '*' * 50
-    b = '.' * (scale - 50)
-    c = (50/scale)*100
-    dur = time.perf_counter() - start
-    print("\r{:^3.0f}%[{}->{}]{:.2f}s".format(c,a,b,dur),end='')
-    print("\n"+"执行结束 end processing".center(scale//2,'-'))
-    '''
+    #albumName = '-Gradation-'
+    #getAlbumInfo(albumName)
