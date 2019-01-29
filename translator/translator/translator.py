@@ -49,6 +49,13 @@ def oxford(translation,result):
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
             result.append(wordTrans)
+
+def collins(translation,result):
+    translation = str(translation)
+    wordPat = '<span class="mean-tran">(.*?)</span>'
+    for wordTrans in re.findall(wordPat,translation):
+        if wordTrans:
+            result.append(wordTrans)
             
 
 retry = 1
@@ -79,11 +86,19 @@ while retry:
         if count == 4:
             translation = tag
     oxford(translation,result)
-    result.append(word)
-    result.reverse()
-    result = '；'.join(result)
-    result = result.replace('；','',1)
-    print(result)
+    if result:
+        result.append(word)
+        result.reverse()
+        result = '；'.join(result)
+        result = result.replace('；','',1)
+        print(result)
+    else:
+        collins(translation,result)
+        result.append(word)
+        result.reverse()
+        result = '；'.join(result)
+        result = result.replace('；','',1)
+        print(result)
     save = input('是否保存\n')
     if save:
         f = open('D:/translation.txt','a')
