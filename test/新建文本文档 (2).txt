@@ -1,1 +1,0 @@
-pattern = '<div id="left-result-container">(.*?)百度翻译对原文进行调整，例句发音部分来自牛津'
