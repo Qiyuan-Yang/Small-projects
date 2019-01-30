@@ -36,72 +36,56 @@ def selector(origin,tag,contain):
             continue
 
 
-def oxford(translation,result):
+def oxford(translation,results):
     translation = str(translation)
     idiomPat = '<div class="entry-idg f-overflow-hidden entry-idg-outdent(.*?)</div>'
     for idiomTrans in re.findall(idiomPat,translation):
         if idiomTrans:
             idiom = re.findall('<p class="idg-id">(.*?)</p>',idiomTrans)
             trans = re.findall('   (.*?) ',idiomTrans)
-            result.append(' -' + idiom[0] + trans[0])
+            result = ' -' + idiom[0] + trans[0]
+            if result in results:
+                continue
+            else:
+                results.append(result)
             translation = translation.replace(idiomTrans,'')
     wordPat = '<p class="entry-d f-gap-top">   (.*?) '
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
-            result.append(wordTrans)
+            results.append(wordTrans)
 
-def collins(translation,result):
+def collins(translation,results):
     translation = str(translation)
     wordPat = '<span class="mean-tran">(.*?)</span>'
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
-            result.append(wordTrans)
+            results.append(wordTrans)
             
 
 retry = 1
 while retry:
-    result = []
+    results = []
     word = input('请输入单词\n')
     url = "https://fanyi.baidu.com/#en/zh/" + word
     text = getHtmlText(url)
     soup = BeautifulSoup(text,'html.parser')
-    translation = selector(soup.div,'class',['main', 'main-outer'])
-    translation = translation.div.div.div
-    translation = selector(translation,'class',['trans-other-wrap', 'clearfix'])
-    translation = selector(translation,'class',['trans-left'])
-    count = 0
-    for div in translation:
-        count += 1
-        if count == 6:
-            translation = div
-    soup = BeautifulSoup(str(translation),'html.parser')
-    count = 0
-    for tag in soup.div:
-        count += 1
-        if count == 4:
-            translation = tag
-    count = 0
-    for tag in translation:
-        count += 1
-        if count == 4:
-            translation = tag
-    oxford(translation,result)
-    if result:
-        result.append(word)
-        result.reverse()
-        result = '；'.join(result)
-        result = result.replace('；','',1)
-        print(result)
+    oxford(soup,results)
+    if results:
+        results.append(word)
+        results.reverse()
+        results = '；'.join(results)
+        results = results.replace('；','',1)
+        print(results)
     else:
-        collins(translation,result)
-        result.append(word)
-        result.reverse()
-        result = '；'.join(result)
-        result = result.replace('；','',1)
-        print(result)
+        collins(soup,results)
+        results.append(word)
+        results.reverse()
+        results = '；'.join(results)
+        results = results.replace('；','',1)
+        print(results)
     save = input('是否保存\n')
     if save:
         f = open('D:/translation.txt','a')
-        f.write(result+'\n')
+        f.write(results+'\n')
         f.close()
     retry = input('是否继续\n')
