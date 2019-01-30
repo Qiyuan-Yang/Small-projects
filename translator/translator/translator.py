@@ -7,7 +7,7 @@ import re
 
 
 
-def getHtmlText(url, loadmore = False, waittime = 1):
+def getHtmlText(url, loadmore = False, waittime = 2):
     path = 'C:\\Users\\yangq\\Downloads\\chromedriver.exe'
     chrome_options = Options()
     chrome_options.add_argument('--headless')
