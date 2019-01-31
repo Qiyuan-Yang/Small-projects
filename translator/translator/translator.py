@@ -85,7 +85,7 @@ while retry:
         print(results)
     save = input('是否保存\n')
     if save:
-        f = open('D:/translation.txt','a')
+        f = open('C:/translation.txt','a')
         f.write(results+'\n')
         f.close()
     retry = input('是否继续\n')
