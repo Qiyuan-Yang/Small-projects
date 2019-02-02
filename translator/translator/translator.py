@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+﻿from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
@@ -7,8 +7,8 @@ import re
 
 
 
-def getHtmlText(url, loadmore = False, waittime = 2):
-    path = 'C:\\Users\\yangq\\Downloads\\chromedriver.exe'
+def getHtmlText(url, loadmore = False, waittime = 1):
+    path = 'C:\\Users\\von SolIII\\Downloads\\chromedriver.exe'
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
@@ -38,7 +38,7 @@ def selector(origin,tag,contain):
 
 def oxford(translation,results):
     translation = str(translation)
-    idiomPat = '<div class="entry-idg f-overflow-hidden entry-idg-outdent(.*?)</div>'
+    idiomPat = '<div class="entry-idg f-overflow-hidden(.*?)</div>'
     for idiomTrans in re.findall(idiomPat,translation):
         if idiomTrans:
             idiom = re.findall('<p class="idg-id">(.*?)</p>',idiomTrans)
@@ -49,10 +49,11 @@ def oxford(translation,results):
             else:
                 results.append(result)
             translation = translation.replace(idiomTrans,'')
-    wordPat = '<p class="entry-d f-gap-top">   (.*?) '
+    wordPat = '<p class="entry-d f-gap-top">(.*?)</p>'
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
-            results.append(wordTrans)
+            wordTrans = re.findall('   (.*?) <br',wordTrans)
+            results.append(wordTrans[0])
 
 def collins(translation,results):
     translation = str(translation)
