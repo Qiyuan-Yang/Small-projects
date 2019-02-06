@@ -1,5 +1,4 @@
-﻿from bs4 import BeautifulSoup
-from selenium import webdriver
+﻿from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
@@ -42,8 +41,9 @@ def oxford(translation,results):
     for idiomTrans in re.findall(idiomPat,translation):
         if idiomTrans:
             idiom = re.findall('<p class="idg-id">(.*?)</p>',idiomTrans)
-            trans = re.findall('   (.*?) ',idiomTrans)
-            result = ' -' + idiom[0] + trans[0]
+            for trans in re.findall('   (.*?) ',idiomTrans):
+                if trans:
+                    result = ' -' + idiom[0] + trans
             if result in results:
                 continue
             else:
@@ -52,7 +52,11 @@ def oxford(translation,results):
     wordPat = '<p class="entry-d f-gap-top">(.*?)</p>'
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
-            wordTrans = re.findall('   (.*?) <br',wordTrans)
+            pat = '   (.*?) <br'
+            wordTrans = re.findall(pat,wordTrans)
+            if 'span' in wordTrans[0]:
+                wordTrans[0] = wordTrans[0]+' '
+                wordTrans = re.findall('   (.*?) ',wordTrans[0])
             results.append(wordTrans[0])
 
 def collins(translation,results):
@@ -69,8 +73,7 @@ while retry:
     word = input('请输入单词\n')
     url = "https://fanyi.baidu.com/#en/zh/" + word
     text = getHtmlText(url)
-    soup = BeautifulSoup(text,'html.parser')
-    oxford(soup,results)
+    oxford(text,results)
     if results:
         results.append(word)
         results.reverse()
@@ -78,7 +81,7 @@ while retry:
         results = results.replace('；','',1)
         print(results)
     else:
-        collins(soup,results)
+        collins(text,results)
         results.append(word)
         results.reverse()
         results = '；'.join(results)
@@ -89,4 +92,3 @@ while retry:
         f = open('C:/translation.txt','a')
         f.write(results+'\n')
         f.close()
-    retry = input('是否继续\n')
