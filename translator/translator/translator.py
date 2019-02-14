@@ -56,8 +56,11 @@ def oxford(translation,results):
             wordTrans = re.findall(pat,wordTrans)
             if 'span' in wordTrans[0]:
                 wordTrans[0] = wordTrans[0]+' '
-                wordTrans = re.findall('   (.*?) ',wordTrans[0])
-            results.append(wordTrans[0])
+                for word in re.findall('   (.*?) ',wordTrans[0]):
+                    if word:
+                        results.append(word)
+            else:
+                results.append(wordTrans[0])
 
 def collins(translation,results):
     translation = str(translation)
