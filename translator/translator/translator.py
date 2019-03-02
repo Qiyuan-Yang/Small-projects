@@ -7,7 +7,7 @@ import re
 
 
 def getHtmlText(url, loadmore = False, waittime = 1):
-    path = 'C:\\Users\\von SolIII\\Downloads\\chromedriver.exe'
+    path = 'C:\\Users\\yangq\\Downloads\\chromedriver.exe'
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
