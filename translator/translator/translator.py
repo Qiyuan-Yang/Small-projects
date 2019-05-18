@@ -68,6 +68,16 @@ def collins(translation,results):
     for wordTrans in re.findall(wordPat,translation):
         if wordTrans:
             results.append(wordTrans)
+
+def baidu(translation,results):
+    translation = str(translation)
+    wordPat = '<span>(.*?)</span>'
+    paraPat = '<div id="left-result-container">(.*?)<div>'
+    for paragraph in re.findall(paraPat,translation):
+        if paragraph:
+            for wordTrans in re.findall(wordPat,translation):
+                if wordTrans:
+                    results.append(wordTrans)
             
 
 retry = 1
@@ -76,6 +86,7 @@ while retry:
     word = input('请输入单词\n')
     url = "https://fanyi.baidu.com/#en/zh/" + word
     text = getHtmlText(url)
+    #print(text)
     oxford(text,results)
     if results:
         results.append(word)
@@ -85,11 +96,19 @@ while retry:
         print(results)
     else:
         collins(text,results)
-        results.append(word)
-        results.reverse()
-        results = '；'.join(results)
-        results = results.replace('；','',1)
-        print(results)
+        if results:
+            results.append(word)
+            results.reverse()
+            results = '；'.join(results)
+            results = results.replace('；','',1)
+            print(results)
+        else:
+            baidu(text,results)
+            results.append(word)
+            results.reverse()
+            results = '；'.join(results)
+            results = results.replace('；','',1)
+            print(results)
     save = input('是否保存\n')
     if save:
         f = open('C:/translation.txt','a')
