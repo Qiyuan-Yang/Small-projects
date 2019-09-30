@@ -6,20 +6,20 @@ import re
 
 
 
-def getHtmlText(url, loadmore = False, waittime = 1):
-    path = 'C:\\Users\\yangq\\Downloads\\chromedriver.exe'
+def getHtmlText(url, loadmore = False, waitTime = 2):
+    path = 'C:\\Users\\von SolIII\\Downloads\\chromedriver.exe'
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     browser = webdriver.Chrome(path,options = chrome_options)
     browser.get(url)
-    time.sleep(waittime)
+    browser.implicitly_wait(waitTime)
     if loadmore:
         while True:
             try:
                 next_button = browser.find_element_by_class_name("more")
                 next_button.click()
-                time.sleep(waittime)
+                time.sleep(waitTime)
             except:
                 break
     html = browser.page_source
@@ -80,22 +80,15 @@ def baidu(translation,results):
                     results.append(wordTrans)
             
 
-retry = 1
-while retry:
-    results = []
-    word = input('请输入单词\n')
-    url = "https://fanyi.baidu.com/#en/zh/" + word
-    text = getHtmlText(url)
-    #print(text)
-    oxford(text,results)
-    if results:
-        results.append(word)
-        results.reverse()
-        results = '；'.join(results)
-        results = results.replace('；','',1)
-        print(results)
-    else:
-        collins(text,results)
+if __name__ == '__main__':
+    retry = 1
+    while retry:
+        results = []
+        word = input('请输入单词\n')
+        url = "https://fanyi.baidu.com/#en/zh/" + word
+        text = getHtmlText(url)
+        #print(text)
+        oxford(text,results)
         if results:
             results.append(word)
             results.reverse()
@@ -103,14 +96,22 @@ while retry:
             results = results.replace('；','',1)
             print(results)
         else:
-            baidu(text,results)
-            results.append(word)
-            results.reverse()
-            results = '；'.join(results)
-            results = results.replace('；','',1)
-            print(results)
-    save = input('是否保存\n')
-    if save:
-        f = open('C:/translation.txt','a')
-        f.write(results+'\n')
-        f.close()
+            collins(text,results)
+            if results:
+                results.append(word)
+                results.reverse()
+                results = '；'.join(results)
+                results = results.replace('；','',1)
+                print(results)
+            else:
+                baidu(text,results)
+                results.append(word)
+                results.reverse()
+                results = '；'.join(results)
+                results = results.replace('；','',1)
+                print(results)
+        save = input('是否保存\n')
+        if save:
+            f = open('C:/translation.txt','a')
+            f.write(results+'\n')
+            f.close()

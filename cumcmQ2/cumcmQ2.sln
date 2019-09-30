@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "cumcmQ2", "cumcmQ2\cumcmQ2.pyproj", "{096A7414-36CF-44F0-B66F-8DCBF724E47A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{096A7414-36CF-44F0-B66F-8DCBF724E47A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{096A7414-36CF-44F0-B66F-8DCBF724E47A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F601264C-A7BA-4F41-8288-EBBE7CFB8BF2}
+	EndGlobalSection
+EndGlobal
