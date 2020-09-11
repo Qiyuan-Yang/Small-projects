@@ -7,7 +7,7 @@ import re
 
 
 def getHtmlText(url, loadmore = False, waitTime = 2):
-    path = 'C:\\Users\\von SolIII\\Downloads\\chromedriver.exe'
+    path = 'D:\\Downloads\\chromedriver.exe'
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
@@ -85,9 +85,9 @@ if __name__ == '__main__':
     while retry:
         results = []
         word = input('请输入单词\n')
-        url = "https://fanyi.baidu.com/#en/zh/" + word
+        url = "https://fanyi.baidu.com/translate?keyfrom=baidu&smartresult=dict&from=groupmessage&isappinstalled=1#en/zh/" + word
         text = getHtmlText(url)
-        #print(text)
+        print(text)
         oxford(text,results)
         if results:
             results.append(word)
